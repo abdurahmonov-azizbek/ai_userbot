@@ -3,6 +3,7 @@ from aiogram import Bot, Dispatcher, F
 from config import Config
 from aiogram.types import *
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
+import database 
 
 bot = Bot(Config.BOT_TOKEN)
 dp = Dispatcher()
@@ -11,6 +12,21 @@ dp = Dispatcher()
 async def start_command(message: Message):
     await message.answer("*Hi👋*", parse_mode="Markdown", reply_markup=main_menu())
 
+@dp.message(F.text == "ℹ️ Bot info")
+async def get_info(message: Message):
+    try:
+        msg = ""
+        source_chats = database.get_all_sources()
+        msg += f"Source chats: {source_chats}\n"
+
+        target_chat = database.get_target_chat()
+        msg += f"Target chat: {target_chat}\n"
+
+        
+
+
+    except Exception as e:
+        await message.answer("Something went wrong, please try again later.")
 
 # Keyboards
 def main_menu():

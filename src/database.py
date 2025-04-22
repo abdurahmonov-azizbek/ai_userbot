@@ -48,6 +48,26 @@ def init_db():
     conn.commit()
     conn.close()
 
+def add_spam_type(spam_type: str):
+    conn = sqlite3.connect(DATABASE_NAME)
+    conn.execute("INSERT OR REPLACE INTO spam_types VALUES (?,)", (spam_type,));
+    conn.commit()
+    conn.close()
+
+def del_spam_type(spam_type: str):
+    conn = sqlite3.connect(DATABASE_NAME)
+    conn.execute("DELETE FROM spam_types WHERE type = ?", (spam_type,))
+    conn.commit()
+    conn.close()
+
+def get_all_spam_types():
+    conn = sqlite3.connect(DATABASE_NAME)
+    cursor = conn.cursor()
+    cursor.execute("SELECT type FROM spam_types")
+    spam_types = [row[0] for row in cursor.fetchall()]
+    conn.close()
+    return spam_types
+
 def add_source(username: str):
     conn = sqlite3.connect(DATABASE_NAME)
     conn.execute("INSERT OR REPLACE INTO sources VALUES (?, CURRENT_TIMESTAMP)", (username,))
