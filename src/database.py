@@ -48,27 +48,73 @@ def init_db():
     conn.commit()
     conn.close()
 
-def get_sources():
+def add_source(username: str):
+    conn = sqlite3.connect(DATABASE_NAME)
+    conn.execute("INSERT OR REPLACE INTO sources VALUES (?, CURRENT_TIMESTAMP)", (username,))
+    conn.commit()
+    conn.close()
+
+def get_all_sources():
+    """Get all source channels/groups"""
     conn = sqlite3.connect(DATABASE_NAME)
     cursor = conn.cursor()
-    cursor.execute("SELECT chat_id FROM sources")
+    cursor.execute("SELECT username FROM sources ORDER BY added_at DESC")
     sources = [row[0] for row in cursor.fetchall()]
     conn.close()
     return sources
 
-def add_source(chat_id, title):
+def del_source(username: str):
+    """Remove a source channel/group"""
     conn = sqlite3.connect(DATABASE_NAME)
-    cursor = conn.cursor()
-    cursor.execute("INSERT OR REPLACE INTO sources VALUES (?, ?)", (chat_id, title))
+    conn.execute("DELETE FROM sources WHERE username = ?", (username,))
     conn.commit()
     conn.close()
 
-def remove_source(chat_id):
+def set_target_chat(username: str):
     conn = sqlite3.connect(DATABASE_NAME)
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM sources WHERE chat_id = ?", (chat_id,))
+    conn.execute("DELETE FROM target_chat")  # Clear previous
+    conn.execute("INSERT INTO target_chat VALUES (?)", (username,))
     conn.commit()
     conn.close()
 
-# Similar functions for keywords, spam_types, and settings...
-# [Additional database functions would go here]
+def get_target_chat():
+    """Get current target channel"""
+    conn = sqlite3.connect(DATABASE_NAME)
+    cursor = conn.cursor()
+    cursor.execute("SELECT username FROM target_chat LIMIT 1")
+    target = cursor.fetchone()
+    conn.close()
+    return target[0] if target else None
+
+def enable_ai():
+    """Enable AI message processing"""
+    conn = sqlite3.connect(DATABASE_NAME)
+    conn.execute("UPDATE ai_settings SET is_enabled = 1 WHERE id = 1")
+    conn.commit()
+    conn.close()
+
+def disable_ai():
+    """Disable AI message processing"""
+    conn = sqlite3.connect(DATABASE_NAME)
+    conn.execute("UPDATE ai_settings SET is_enabled = 0 WHERE id = 1")
+    conn.commit()
+    conn.close()
+
+def set_ai_model(model: str):
+    """Change active AI model"""
+    conn = sqlite3.connect(DATABASE_NAME)
+    conn.execute("UPDATE ai_settings SET model = ? WHERE id = 1", (model,))
+    conn.commit()
+    conn.close()
+
+def get_ai_status():
+    """Get current AI settings"""
+    conn = sqlite3.connect(DATABASE_NAME)
+    cursor = conn.cursor()
+    cursor.execute("SELECT model, is_enabled FROM ai_settings WHERE id = 1")
+    result = cursor.fetchone()
+    conn.close()
+    return {
+        'model': result[0],
+        'enabled': bool(result[1])
+    } if result else None

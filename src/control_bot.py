@@ -17,21 +17,15 @@ def main_menu():
     return ReplyKeyboardMarkup(
         keyboard=[
             [
-                KeyboardButton(text="📋 Sources list"),
+                KeyboardButton(text="ℹ️ Bot info")
             ],
             [
                 KeyboardButton(text="➕ Add source"), 
                 KeyboardButton(text="❌ Del source")
             ],
             [
-                KeyboardButton(text="🛡️ Spam keywords"),
-            ],
-            [
                 KeyboardButton(text="➕ Add keyword"),
                 KeyboardButton(text="❌ Del keyword")
-            ],
-            [
-                KeyboardButton(text="🤖 AI Settings"),
             ],
             [
                 KeyboardButton(text="🟢 Enable AI"),
