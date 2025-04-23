@@ -1,52 +1,27 @@
 import sqlite3
-from config import DATABASE_NAME
+from config import Config
 
-def init_db():
+DATABASE_NAME = Config.DATABASE_NAME
+
+def add_spam_keyword(keyword: str):
     conn = sqlite3.connect(DATABASE_NAME)
-    cursor = conn.cursor()
-    
-    # Simplified schema
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS sources (
-        username TEXT PRIMARY KEY,  -- Using @username instead of chat_id
-        added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-    """)
-    
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS target_chat (
-        username TEXT PRIMARY KEY  -- Single target chat storage
-    )
-    """)
-    
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS spam_keywords (
-        keyword TEXT PRIMARY KEY
-    )
-    """)
-    
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS spam_types (
-        type TEXT PRIMARY KEY  -- 'photo', 'video', etc.
-    )
-    """)
-    
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS ai_settings (
-        id INTEGER PRIMARY KEY CHECK (id = 1),  -- Single row enforcement
-        model TEXT NOT NULL DEFAULT 'gpt-3.5-turbo',
-        is_enabled BOOLEAN NOT NULL DEFAULT 0
-    )
-    """)
-    
-    # Initialize AI settings with default values
-    cursor.execute("""
-    INSERT OR IGNORE INTO ai_settings (id, model, is_enabled)
-    VALUES (1, ?, 0)
-    """, ("gpt-3.5-turbo",))
-    
+    conn.execute("INSERT OR REPLACE INTO spam_keywords VALUES (?,)", (keyword,));
     conn.commit()
     conn.close()
+
+def del_spam_keyword(keyword: str):
+    conn = sqlite3.connect(DATABASE_NAME)
+    conn.execute("DELETE FROM spam_keywords WHERE type = ?", (keyword,))
+    conn.commit()
+    conn.close()
+
+def get_all_spam_keywords():
+    conn = sqlite3.connect(DATABASE_NAME)
+    cursor = conn.cursor()
+    cursor.execute("SELECT keyword FROM spam_keywords")
+    spam_keywords = [row[0] for row in cursor.fetchall()]
+    conn.close()
+    return spam_keywords
 
 def add_spam_type(spam_type: str):
     conn = sqlite3.connect(DATABASE_NAME)
