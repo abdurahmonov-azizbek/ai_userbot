@@ -5,13 +5,13 @@ DATABASE_NAME = Config.DATABASE_NAME
 
 def add_spam_keyword(keyword: str):
     conn = sqlite3.connect(DATABASE_NAME)
-    conn.execute("INSERT OR REPLACE INTO spam_keywords VALUES (?,)", (keyword,));
+    conn.execute("INSERT OR REPLACE INTO spam_keywords VALUES (?)", (keyword,));
     conn.commit()
     conn.close()
 
 def del_spam_keyword(keyword: str):
     conn = sqlite3.connect(DATABASE_NAME)
-    conn.execute("DELETE FROM spam_keywords WHERE type = ?", (keyword,))
+    conn.execute("DELETE FROM spam_keywords WHERE keyword = ?", (keyword,))
     conn.commit()
     conn.close()
 
@@ -25,7 +25,7 @@ def get_all_spam_keywords():
 
 def add_spam_type(spam_type: str):
     conn = sqlite3.connect(DATABASE_NAME)
-    conn.execute("INSERT OR REPLACE INTO spam_types VALUES (?,)", (spam_type,));
+    conn.execute("INSERT OR REPLACE INTO spam_types VALUES (?)", (spam_type,));
     conn.commit()
     conn.close()
 

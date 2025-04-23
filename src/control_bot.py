@@ -34,7 +34,6 @@ async def get_info(message: Message):
         msg += f"🎯 Target chat: {str(target_chat) if target_chat is not None else "not setted!"}\n"
 
         spam_keywords = database.get_all_spam_keywords()
-        print(spam_keywords)
         msg += f"⭕️ Spam keywords: {", ".join(spam_keywords)}\n"
 
         spam_types = database.get_all_spam_types()
@@ -168,6 +167,78 @@ async def save_spam_keywords(message: Message, state: FSMContext):
     except Exception as e:
         logger.error(f"Error in save_spam_keywords: {e}")
 
+class AddSpamType(StatesGroup):
+    type = State()
+
+@dp.message(F.text == "➕ Add  spam type")
+async def add_spam_type(message: Message, state: FSMContext):
+    try:
+        await state.set_state(AddSpamType.type)
+        await message.answer("Enter type: ", reply_markup=cancel_keyboard())
+    except Exception as e:
+        logger.error(f"Error in add_spam_type: {e}")
+
+@dp.message(AddSpamType.type)
+async def save_spam_type(message: Message, state: FSMContext):
+    try:
+        type = message.text.strip().lower()
+        types = ['photo', 'text', 'video', 'document', 'audio', 'sticker', 'contact', 'location']
+
+        if type not in types:
+            await message.answer(f"Please enter correct media types: \n{", ".join(types)}\n")
+            return
+        
+        database.add_spam_type(type)
+        await state.clear()
+        await message.answer("✅", reply_markup=main_menu())
+    except Exception as e:
+        logger.error(f"Error in save_spam_type: {e}")
+
+@dp.message(F.text == "🟢 Enable AI")
+async def enable_ai(message: Message):
+    try:
+        database.enable_ai()
+        await message.answer("✅")
+    except Exception as e:
+        logger.error(f"Error in enable_ai: {e}")
+
+@dp.message(F.text == "🔴 Disable AI")
+async def enable_ai(message: Message):
+    try:
+        database.disable_ai()
+        await message.answer("✅")
+    except Exception as e:
+        logger.error(f"Error in enable_ai: {e}")
+
+class SetAiModel(StatesGroup):
+    model = State()
+
+@dp.message(F.text == "🤖 Set AI model")
+async def set_ai_model(message: Message, state: FSMContext):
+    try:
+        models = ['GPT-4.1', 'o4-mini', 'o3']
+        await message.answer(f"Models: \n{",\n".join(models)}\n")
+        await state.set_state(SetAiModel.model)
+        await message.answer("Enter model: ", reply_markup=cancel_keyboard())
+
+    except Exception as e:
+        logger.error(f"Error in set_ai_model: {e}")
+
+@dp.message(SetAiModel.model)
+async def save_ai_model(message: Message, state: FSMContext):
+    try:
+        model = message.text.strip()
+        models = ['GPT-4.1', 'o4-mini', 'o3']
+
+        if model not in models:
+            await message.answer("Wrong model, please try again!")
+            return
+        
+        database.set_ai_model(model)
+        await message.answer("✅", reply_markup=main_menu())
+    except Exception as e:
+        logger.error(f"Error in save_id")
+
 # Keyboards
 def main_menu():
     return ReplyKeyboardMarkup(
@@ -193,6 +264,9 @@ def main_menu():
             [
                 KeyboardButton(text="🟢 Enable AI"),
                 KeyboardButton(text="🔴 Disable AI")
+            ],
+            [
+                KeyboardButton(text="🤖 Set AI model")
             ]
         ],
         resize_keyboard=True
